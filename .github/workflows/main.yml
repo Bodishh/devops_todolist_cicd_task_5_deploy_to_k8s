@@ -99,7 +99,7 @@ jobs:
     - name: Download Helm Package Artifact
       uses: actions/download-artifact@v4
       with:
-        name: helm-package
+        name: helm-artifacts
         path: .
 
     - name: Set Up Helm
