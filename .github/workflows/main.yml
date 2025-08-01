@@ -130,3 +130,14 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Kind (Staging)
+    uses: ./.github/workflows/reusable-deploy.yml
+    needs: helm-ci
+    with:
+      environment: staging
+      image: ${{ secrets.DOCKERHUB_USERNAME }}/todoapp:${{ github.sha }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
