@@ -121,7 +121,7 @@ jobs:
 
 
   deploy-helm:
-    needs: [ helm-ci, build-image ]
+    needs: [ helm-ci, docker-ci ]
     runs-on: ubuntu-latest
 
 
