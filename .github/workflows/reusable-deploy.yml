@@ -1,0 +1,54 @@
+name: Reusable Deploy to Kind
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+jobs:
+  helm-cd:
+    name: Deploy with Helm
+    runs-on: ubuntu-latest
+
+    env:
+      ENVIRONMENT: ${{ inputs.environment }}
+      IMAGE: ${{ inputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Create kind cluster
+        run: |
+          kind create cluster --name kind-${{ env.ENVIRONMENT }} --config cluster.yml
+
+      - name: Set up KUBECONFIG
+        run: echo "KUBECONFIG=$(kind get kubeconfig-path --name=kind-${{ env.ENVIRONMENT }})" >> $GITHUB_ENV
+
+      - uses: azure/setup-helm@v4
+
+      - name: Pull and load image to Kind
+        run: |
+          docker pull $IMAGE
+          kind load docker-image $IMAGE --name kind-${{ env.ENVIRONMENT }}
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install todoapp ./helm-charts/todoapp \
+            --namespace todoapp-${{ env.ENVIRONMENT }} \
+            --create-namespace \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/todoapp \
+            --set image.tag=$(echo $IMAGE | cut -d ':' -f2) \
+            --values ./helm-charts/todoapp/values.yaml \
+            --atomic
