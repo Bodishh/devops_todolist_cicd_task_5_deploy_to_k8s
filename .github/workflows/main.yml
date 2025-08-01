@@ -96,9 +96,10 @@ jobs:
     name: Helm CI
     steps:
 
-    - uses: actions/download-artifact@v4
+    - name: Download Helm Package Artifact
+      uses: actions/download-artifact@v4
       with:
-        name: helm-artifacts
+        name: helm-package
         path: .
 
     - name: Set Up Helm
@@ -151,24 +152,29 @@ jobs:
           docker pull $IMAGE
           kind load docker-image $IMAGE --name kind-${{ env.ENVIRONMENT }}
 
+      - name: Download Helm Package Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-package
+          path: .
+
       - name: Helm dry-run
         run: |
-          helm upgrade --install todoapp ./helm-charts/todoapp \
+          helm upgrade --install todoapp ./todoapp-*.tgz \
             --namespace todoapp-${{ env.ENVIRONMENT }} \
             --create-namespace \
             --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/todoapp \
             --set image.tag=${{ github.sha }} \
-            --values ./helm-charts/todoapp/values.yaml \
             --dry-run
 
       - name: Helm deploy
         run: |
-          helm upgrade --install todoapp ./helm-charts/todoapp \
+          helm upgrade --install todoapp ./todoapp-*.tgz \
             --namespace todoapp-${{ env.ENVIRONMENT }} \
             --create-namespace \
             --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/todoapp \
             --set image.tag=${{ github.sha }} \
-            --values ./helm-charts/todoapp/values.yaml \
             --atomic
+
 
 
