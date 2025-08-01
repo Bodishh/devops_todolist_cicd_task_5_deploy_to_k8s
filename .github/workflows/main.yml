@@ -98,7 +98,7 @@ jobs:
 
     env:
       ENVIRONMENT: development
-      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DockerImageName }}:${{ github.sha }}
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/todoapp:${{ github.sha }}
 
     steps:
       - name: Checkout code
